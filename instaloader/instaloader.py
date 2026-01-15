@@ -341,7 +341,7 @@ class Instaloader:
         file_extension = url[-3:] if urlmatch is None else urlmatch.group(0)[1:-1]
         nominal_filename = filename + '.' + file_extension
         if os.path.isfile(nominal_filename):
-            self.context.log(nominal_filename + ' exists', end=' ', flush=True)
+            self.context.log(f"File {nominal_filename} exists, skipping")
             return False
         resp = self.context.get_raw(url)
         if 'Content-Type' in resp.headers and resp.headers['Content-Type']:
@@ -351,7 +351,7 @@ class Instaloader:
         else:
             filename = nominal_filename
         if filename != nominal_filename and os.path.isfile(filename):
-            self.context.log(filename + ' exists', end=' ', flush=True)
+            self.context.log(filename + ' exists')
             return False
         self.context.write_raw(resp, filename)
         os.utime(filename, (datetime.now().timestamp(), mtime.timestamp()))
@@ -367,7 +367,7 @@ class Instaloader:
         save_structure_to_file(structure, filename)
         if isinstance(structure, (Post, StoryItem)):
             # log 'json ' message when saving Post or StoryItem
-            self.context.log('json', end=' ', flush=True)
+            self.context.log('json')
 
     def update_comments(self, filename: str, post: Post) -> None:
         def _postcommentanswer_asdict(comment):
@@ -404,7 +404,7 @@ class Instaloader:
         def get_new_comments(new_comments, start):
             for idx, comment in enumerate(new_comments, start=start+1):
                 if idx % 250 == 0:
-                    self.context.log('{}'.format(idx), end='…', flush=True)
+                    self.context.log('{}'.format(idx), end='…')
                 yield comment
 
         def save_comments(extended_comments):
@@ -441,7 +441,7 @@ class Instaloader:
             raise
         if comments:
             save_comments(comments)
-            self.context.log('comments', end=' ', flush=True)
+            self.context.log('comments')
 
     def save_caption(self, filename: str, mtime: datetime, caption: str) -> None:
         """Updates picture caption / Post metadata info"""
@@ -457,9 +457,9 @@ class Instaloader:
                 file_caption = file.read()
             if file_caption.replace(b'\r\n', b'\n') == bcaption.replace(b'\r\n', b'\n'):
                 try:
-                    self.context.log(pcaption + ' unchanged', end=' ', flush=True)
+                    self.context.log(pcaption + ' unchanged')
                 except UnicodeEncodeError:
-                    self.context.log('txt unchanged', end=' ', flush=True)
+                    self.context.log('txt unchanged')
                 return None
             else:
                 def get_filename(index):
@@ -471,13 +471,13 @@ class Instaloader:
                 for index in range(i, 0, -1):
                     os.rename(get_filename(index - 1), get_filename(index))
                 try:
-                    self.context.log(_elliptify(file_caption.decode("UTF-8")) + ' updated', end=' ', flush=True)
+                    self.context.log(_elliptify(file_caption.decode("UTF-8")) + ' updated')
                 except UnicodeEncodeError:
-                    self.context.log('txt updated', end=' ', flush=True)
+                    self.context.log('txt updated')
         try:
-            self.context.log(pcaption, end=' ', flush=True)
+            self.context.log(pcaption)
         except UnicodeEncodeError:
-            self.context.log('txt', end=' ', flush=True)
+            self.context.log('txt')
         with open(filename, 'w', encoding='UTF-8') as fio:
             fio.write(caption)
         os.utime(filename, (datetime.now().timestamp(), mtime.timestamp()))
@@ -495,7 +495,7 @@ class Instaloader:
             with BytesIO(location_string.encode()) as bio:
                 shutil.copyfileobj(cast(IO, bio), text_file)
         os.utime(filename, (datetime.now().timestamp(), mtime.timestamp()))
-        self.context.log('geo', end=' ', flush=True)
+        self.context.log('geo')
 
     def format_filename_within_target_path(self,
                                            target: Union[str, Path],
@@ -698,7 +698,7 @@ class Instaloader:
             if not os.path.isfile(path):
                 return False
             else:
-                self.context.log(path + ' exists', end=' ', flush=True)
+                self.context.log(path + ' exists')
                 return True
 
         def _all_already_downloaded(path_base, is_videos_enumerated) -> bool:
@@ -871,9 +871,9 @@ class Instaloader:
                     if item.date_local <= last_scraped:
                         break
                 if storyitem_filter is not None and not storyitem_filter(item):
-                    self.context.log("<{} skipped>".format(item), flush=True)
+                    self.context.log("<{} skipped>".format(item))
                     continue
-                self.context.log("[%3i/%3i] " % (count, totalcount), end="", flush=True)
+                self.context.log("[%3i/%3i] " % (count, totalcount), )
                 count += 1
                 with self.context.error_catcher('Download story from user {}'.format(name)):
                     downloaded = self.download_storyitem(item, filename_target if filename_target else name)
@@ -894,7 +894,7 @@ class Instaloader:
             if not os.path.isfile(path):
                 return False
             else:
-                self.context.log(path + ' exists', end=' ', flush=True)
+                self.context.log(path + ' exists')
                 return True
 
         date_local = item.date_local
@@ -980,9 +980,9 @@ class Instaloader:
             count = 1
             for item in user_highlight.get_items():
                 if storyitem_filter is not None and not storyitem_filter(item):
-                    self.context.log("<{} skipped>".format(item), flush=True)
+                    self.context.log("<{} skipped>".format(item))
                     continue
-                self.context.log("[%3i/%3i] " % (count, totalcount), end="", flush=True)
+                self.context.log("[%3i/%3i] " % (count, totalcount), )
                 count += 1
                 with self.context.error_catcher('Download highlights \"{}\" from user {}'.format(user_highlight.title,
                                                                                                  name)):
@@ -1052,9 +1052,9 @@ class Instaloader:
                 if displayed_count is not None:
                     self.context.log("[{0:{w}d}/{1:{w}d}] ".format(number, displayed_count,
                                                                    w=len(str(displayed_count))),
-                                     end="", flush=True)
+                                     )
                 else:
-                    self.context.log("[{:3d}] ".format(number), end="", flush=True)
+                    self.context.log("[{:3d}] ".format(number), )
                 if post_filter is not None:
                     try:
                         if not post_filter(post):

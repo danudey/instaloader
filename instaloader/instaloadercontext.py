@@ -137,8 +137,8 @@ class InstaloaderContext:
 
     def log(self, *msg, sep='', end='\n', flush=False):
         """Log a message to stdout that can be suppressed with --quiet."""
-        if not self.quiet:
-            print(*msg, sep=sep, end=end, flush=flush)
+        # if not self.quiet:
+        print(*msg, sep=sep, end=end, flush=flush)
 
     def error(self, msg, repeat_at_end=True):
         """Log a non-fatal error message to stderr, which is repeated at program termination.
@@ -411,7 +411,7 @@ class InstaloaderContext:
         is_other_query = not is_graphql_query and not is_doc_id_query and host == "www.instagram.com"
         sess = session if session else self._session
         try:
-            self.do_sleep()
+            # self.do_sleep()
             if is_graphql_query:
                 self._rate_controller.wait_before_query(params['query_hash'])
             if is_doc_id_query:
@@ -471,7 +471,7 @@ class InstaloaderContext:
             if 'status' in resp_json and resp_json['status'] != "ok":
                 raise ConnectionException(self._response_error(resp))
             return resp_json
-        except (ConnectionException, json.decoder.JSONDecodeError, requests.exceptions.RequestException) as err:
+        except (json.decoder.JSONDecodeError, requests.exceptions.RequestException) as err:
             error_string = "JSON Query to {}: {}".format(path, err)
             if _attempt == self.max_connection_attempts:
                 if isinstance(err, QueryReturnedNotFoundException):
@@ -666,7 +666,6 @@ class InstaloaderContext:
         """Write raw response data into a file.
 
         .. versionadded:: 4.2.1"""
-        self.log(filename, end=' ', flush=True)
         with open(filename + '.temp', 'wb') as file:
             if isinstance(resp, requests.Response):
                 shutil.copyfileobj(resp.raw, file)

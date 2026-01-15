@@ -491,13 +491,13 @@ class Post:
                     node = edge['node']
                     is_video = node['is_video']
                     display_url = node['display_url']
-                    if not is_video and self._context.iphone_support and self._context.is_logged_in:
-                        try:
-                            carousel_media = self._iphone_struct['carousel_media']
-                            orig_url = carousel_media[idx]['image_versions2']['candidates'][0]['url']
-                            display_url = re.sub(r'([?&])se=\d+&?', r'\1', orig_url).rstrip('&')
-                        except (InstaloaderException, KeyError, IndexError) as err:
-                            self._context.error(f"Unable to fetch high quality image version of {self}: {err}")
+                    # if not is_video and self._context.iphone_support and self._context.is_logged_in:
+                    #     try:
+                    #         carousel_media = self._iphone_struct['carousel_media']
+                    #         orig_url = carousel_media[idx]['image_versions2']['candidates'][0]['url']
+                    #         display_url = re.sub(r'([?&])se=\d+&?', r'\1', orig_url).rstrip('&')
+                    #     except (InstaloaderException, KeyError, IndexError) as err:
+                    #         self._context.error(f"Unable to fetch high quality image version of {self}: {err}")
                     yield PostSidecarNode(is_video=is_video, display_url=display_url,
                                           video_url=node['video_url'] if is_video else None)
 
